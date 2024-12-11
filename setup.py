@@ -1,8 +1,7 @@
+from setuptools import setup, find_packages
 import os
 import subprocess
 import sys
-from setuptools import setup
-from setuptools.command.install import install
 
 
 class CustomInstallCommand(install):
@@ -23,13 +22,7 @@ class CustomInstallCommand(install):
         if os.path.exists(script_path):
             print(f"Running {script}...")
             try:
-                # Run the script
-                result = subprocess.run(
-                    [script_path],
-                    shell=True,
-                    check=True,
-                    text=True,
-                )
+                result = subprocess.run([script_path], shell=True, check=True, text=True)
                 if result.returncode != 0:
                     raise RuntimeError(f"{script} failed with exit code {result.returncode}")
             except subprocess.CalledProcessError as e:
@@ -47,6 +40,9 @@ setup(
     author_email="saeid@example.com",
     license="Apache-2.0",
     url="https://github.com/Saeidjamali/autogluon",
+    packages=find_packages(
+        include=["autogluon*", "core*", "tabular*", "timeseries*", "multimodal*"]
+    ),  # Explicitly include the relevant directories
     cmdclass={
         "install": CustomInstallCommand,
     },
