@@ -1,0 +1,16 @@
+include LICENSE
+include NOTICE
+include VERSION
+
+
+# Include the core utils script directly
+include core/src/autogluon/core/_setup_utils.py
+
+# Include all submodules and necessary files
+recursive-include core/src *.py
+recursive-include common/src *.py
+recursive-include eda/src *.py
+recursive-include features/src *.py
+recursive-include multimodal/src *.py
+recursive-include tabular/src *.py
+recursive-include timeseries/src *.py

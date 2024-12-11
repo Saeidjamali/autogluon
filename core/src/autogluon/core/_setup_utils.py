@@ -11,6 +11,8 @@ LITE_MODE = "lite" in PACKAGE_NAME
 
 AUTOGLUON_ROOT_PATH = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", ".."))
 
+
+
 PYTHON_REQUIRES = ">=3.9, <3.13"
 
 
@@ -84,9 +86,12 @@ def update_version(version, use_file_if_exists=True, create_file=False):
 def create_version_file(*, version, submodule):
     print("-- Building version " + version)
     if submodule is not None:
-        version_path = os.path.join(AUTOGLUON_ROOT_PATH, submodule, "src", AUTOGLUON, submodule, "version.py")
+        # If submodules are located under "core/src/autogluon/{submodule}", write version there:
+        version_path = os.path.join(AUTOGLUON_ROOT_PATH, "core", "src", AUTOGLUON, submodule, "version.py")
     else:
-        version_path = os.path.join(AUTOGLUON_ROOT_PATH, AUTOGLUON, "src", AUTOGLUON, "version.py")
+        # If no submodule, place it at "core/src/autogluon/version.py"
+        version_path = os.path.join(AUTOGLUON_ROOT_PATH, "core", "src", AUTOGLUON, "version.py")
+
     with open(version_path, "w") as f:
         f.write(f'"""This is the {AUTOGLUON} version file."""\n')
         f.write("__version__ = '{}'\n".format(version))
