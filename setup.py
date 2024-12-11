@@ -1,7 +1,8 @@
-from setuptools import setup, find_packages
 import os
 import subprocess
 import sys
+from setuptools import setup, find_packages
+from setuptools.command.install import install  # Ensure this import is present
 
 
 class CustomInstallCommand(install):
@@ -22,7 +23,13 @@ class CustomInstallCommand(install):
         if os.path.exists(script_path):
             print(f"Running {script}...")
             try:
-                result = subprocess.run([script_path], shell=True, check=True, text=True)
+                # Run the script
+                result = subprocess.run(
+                    [script_path],
+                    shell=True,
+                    check=True,
+                    text=True,
+                )
                 if result.returncode != 0:
                     raise RuntimeError(f"{script} failed with exit code {result.returncode}")
             except subprocess.CalledProcessError as e:
