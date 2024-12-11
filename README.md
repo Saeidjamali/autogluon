@@ -1,4 +1,3 @@
-Below is the revised documentation with concrete version and file names that were used as examples during our building and testing process.
 
 ---
 
