@@ -1,7 +1,5 @@
 """Setup utils for autogluon. Only used for installing the code via setup.py, do not import after installation."""
 
-# Refer to https://github.com/scikit-learn/scikit-learn/blob/main/sklearn/_min_dependencies.py for original implementation
-
 import os
 
 AUTOGLUON = "autogluon"
@@ -9,36 +7,46 @@ PACKAGE_NAME = os.getenv("AUTOGLUON_PACKAGE_NAME", AUTOGLUON)
 # TODO: make it more explicit, maybe use another env variable
 LITE_MODE = "lite" in PACKAGE_NAME
 
-AUTOGLUON_ROOT_PATH = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", ".."))
-
-
+# Set AUTOGLUON_ROOT_PATH to the project root relative to this file
+# Assuming this file is located at core/src/autogluon/core/_setup_utils.py
+AUTOGLUON_ROOT_PATH = os.path.abspath(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..")
+)
+# AUTOGLUON_ROOT_PATH now points to /Users/saeid/Workspace/GitHub/autogluon
 
 PYTHON_REQUIRES = ">=3.9, <3.13"
 
-
 # Only put packages here that would otherwise appear multiple times across different module's setup.py files.
 DEPENDENT_PACKAGES = {
-    "boto3": ">=1.10,<2",  # <2 because unlikely to introduce breaking changes in minor releases. >=1.10 because 1.10 is 3 years old, no need to support older
-    "numpy": ">=1.25.0,<2.1.4",  # "<{N+3}" upper cap, where N is the latest released minor version, assuming no warnings using N
-    "pandas": ">=2.0.0,<2.3.0",  # "<{N+3}" upper cap
-    "scikit-learn": ">=1.4.0,<1.5.3",  # capping to latest version
-    "scipy": ">=1.5.4,<1.16",  # "<{N+2}" upper cap
-    "matplotlib": ">=3.7.0,<3.11",  # "<{N+2}" upper cap
-    "psutil": ">=5.7.3,<7.0.0",  # Major version cap
-    "s3fs": ">=2023.1,<2025",  # Yearly cap
-    "networkx": ">=3.0,<4",  # Major version cap
-    "tqdm": ">=4.38,<5",  # Major version cap
-    "Pillow": ">=10.0.1,<12",  # Major version cap
-    "torch": ">=2.2,<2.6",  # Major version cap, sync with common/src/autogluon/common/utils/try_import.py
-    "lightning": ">=2.2,<2.6",  # Major version cap
-    "async_timeout": ">=4.0,<6",  # Major version cap
+    "boto3": ">=1.10,<2",
+    "numpy": ">=1.25.0,<2.1.4",
+    "pandas": ">=2.0.0,<2.3.0",
+    "scikit-learn": ">=1.4.0,<1.5.3",
+    "scipy": ">=1.5.4,<1.16",
+    "matplotlib": ">=3.7.0,<3.11",
+    "psutil": ">=5.7.3,<7.0.0",
+    "s3fs": ">=2023.1,<2025",
+    "networkx": ">=3.0,<4",
+    "tqdm": ">=4.38,<5",
+    "Pillow": ">=10.0.1,<12",
+    "torch": ">=2.2,<2.6",
+    "lightning": ">=2.2,<2.6",
+    "async_timeout": ">=4.0,<6",
     "transformers[sentencepiece]": ">=4.38.0,<5",
     "accelerate": ">=0.34.0,<1.0",
 }
-if LITE_MODE:
-    DEPENDENT_PACKAGES = {package: version for package, version in DEPENDENT_PACKAGES.items() if package not in ["psutil", "Pillow", "timm"]}
 
-DEPENDENT_PACKAGES = {package: package + version for package, version in DEPENDENT_PACKAGES.items()}
+if LITE_MODE:
+    DEPENDENT_PACKAGES = {
+        package: version
+        for package, version in DEPENDENT_PACKAGES.items()
+        if package not in ["psutil", "Pillow", "timm"]
+    }
+
+DEPENDENT_PACKAGES = {
+    package: package + version for package, version in DEPENDENT_PACKAGES.items()
+}
+
 # TODO: Use DOCS_PACKAGES and TEST_PACKAGES
 DOCS_PACKAGES = []
 TEST_PACKAGES = [
@@ -48,26 +56,44 @@ TEST_PACKAGES = [
 
 
 def load_version_file():
-    with open(os.path.join(AUTOGLUON_ROOT_PATH, "VERSION")) as version_file:
+    """
+    Load the version from the VERSION file located at the project root.
+    """
+    version_file_path = os.path.join(AUTOGLUON_ROOT_PATH, "core", "src", "autogluon", "VERSION")
+    print(f"Looking for VERSION file at: {version_file_path}")  # Debugging path
+
+    if not os.path.isfile(version_file_path):
+        raise FileNotFoundError(f"VERSION file not found at {version_file_path}")
+
+    with open(version_file_path, "r") as version_file:
         version = version_file.read().strip()
+
     return version
 
 
 def get_dependency_version_ranges(packages: list) -> list:
-    return [package if package not in DEPENDENT_PACKAGES else DEPENDENT_PACKAGES[package] for package in packages]
+    """
+    Get the version ranges for the given list of packages.
+    """
+    return [
+        package if package not in DEPENDENT_PACKAGES else DEPENDENT_PACKAGES[package]
+        for package in packages
+    ]
 
 
 def update_version(version, use_file_if_exists=True, create_file=False):
     """
-    To release a new stable version on PyPi, simply tag the release on github, and the Github CI will automatically publish
-    a new stable version to PyPi using the configurations in .github/workflows/pypi_release.yml .
-    You need to increase the version number after stable release, so that the nightly pypi can work properly.
+    Update the version string by appending the current date or a minor version.
+
+    To release a new stable version on PyPi, simply tag the release on GitHub, and the GitHub CI will
+    automatically publish a new stable version to PyPi using the configurations in .github/workflows/pypi_release.yml.
+    You need to increase the version number after a stable release, so that the nightly PyPi can work properly.
     """
     try:
         if not os.getenv("RELEASE"):
             from datetime import date
 
-            minor_version_file_path = os.path.join(AUTOGLUON_ROOT_PATH, "VERSION.minor")
+            minor_version_file_path = os.path.join(AUTOGLUON_ROOT_PATH, "core", "src", "autogluon", "VERSION.minor")
             if use_file_if_exists and os.path.isfile(minor_version_file_path):
                 with open(minor_version_file_path) as f:
                     day = f.read().strip()
@@ -78,20 +104,35 @@ def update_version(version, use_file_if_exists=True, create_file=False):
     except Exception:
         pass
     if create_file and not os.getenv("RELEASE"):
-        with open(os.path.join(AUTOGLUON_ROOT_PATH, "VERSION.minor"), "w") as f:
+        with open(os.path.join(AUTOGLUON_ROOT_PATH, "core", "src", "autogluon", "VERSION.minor"), "w") as f:
             f.write(day)
     return version
 
 
 def create_version_file(*, version, submodule):
+    """
+    Create a version.py file with the specified version and lite mode flag.
+    """
     print("-- Building version " + version)
-    if submodule is not None:
-        # If submodules are located under "core/src/autogluon/{submodule}", write version there:
-        version_path = os.path.join(AUTOGLUON_ROOT_PATH, "core", "src", AUTOGLUON, submodule, "version.py")
-    else:
-        # If no submodule, place it at "core/src/autogluon/version.py"
-        version_path = os.path.join(AUTOGLUON_ROOT_PATH, "core", "src", AUTOGLUON, "version.py")
 
+    # Construct the path to the version.py file
+    if submodule is not None:
+        # Submodule-specific version file
+        version_path = os.path.join(
+            AUTOGLUON_ROOT_PATH, "core", "src", "autogluon", submodule, "version.py"
+        )
+    else:
+        # Root version file
+        version_path = os.path.join(
+            AUTOGLUON_ROOT_PATH, "core", "src", "autogluon", "version.py"
+        )
+
+    print(f"Creating version file at: {version_path}")  # Debugging path
+
+    # Ensure the directory exists
+    os.makedirs(os.path.dirname(version_path), exist_ok=True)
+
+    # Write the version information to the version.py file
     with open(version_path, "w") as f:
         f.write(f'"""This is the {AUTOGLUON} version file."""\n')
         f.write("__version__ = '{}'\n".format(version))
@@ -99,17 +140,25 @@ def create_version_file(*, version, submodule):
 
 
 def default_setup_args(*, version, submodule):
+    """
+    Generate the default setup arguments for setuptools.
+    """
     from setuptools import find_namespace_packages
 
-    long_description = open(os.path.join(AUTOGLUON_ROOT_PATH, "README.md")).read()
+    long_description_path = os.path.join(AUTOGLUON_ROOT_PATH, "README.md")
+    with open(long_description_path, "r", encoding="utf-8") as f:
+        long_description = f.read()
+
     if submodule is None:
         name = PACKAGE_NAME
     else:
         name = f"{PACKAGE_NAME}.{submodule}"
+
     if os.getenv("RELEASE"):
         development_status = "Development Status :: 5 - Production/Stable"
     else:
         development_status = "Development Status :: 4 - Beta"
+
     setup_args = dict(
         name=name,
         version=version,
@@ -123,7 +172,7 @@ def default_setup_args(*, version, submodule):
         # Package info
         packages=find_namespace_packages("src", include=["autogluon.*"]),
         package_dir={"": "src"},
-        namespace_packages=[AUTOGLUON],
+        # Removed namespace_packages as it's deprecated; using implicit namespaces (PEP 420)
         zip_safe=True,
         include_package_data=True,
         python_requires=PYTHON_REQUIRES,
@@ -133,16 +182,10 @@ def default_setup_args(*, version, submodule):
             "Intended Audience :: Education",
             "Intended Audience :: Developers",
             "Intended Audience :: Science/Research",
-            "Intended Audience :: Customer Service",
-            "Intended Audience :: Financial and Insurance Industry",
-            "Intended Audience :: Healthcare Industry",
-            "Intended Audience :: Telecommunications Industry",
             "License :: OSI Approved :: Apache Software License",
             "Operating System :: MacOS",
             "Operating System :: Microsoft :: Windows",
             "Operating System :: POSIX",
-            "Operating System :: Unix",
-            "Programming Language :: Python :: 3",
             "Programming Language :: Python :: 3.9",
             "Programming Language :: Python :: 3.10",
             "Programming Language :: Python :: 3.11",

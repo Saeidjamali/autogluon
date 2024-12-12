@@ -1,16 +1,57 @@
+# Include global files
+include README.md
 include LICENSE
 include NOTICE
 include VERSION
 
+# Include submodule VERSION files
+recursive-include core/src/autogluon VERSION
+recursive-include */src/autogluon VERSION
 
-# Include the core utils script directly
-include core/src/autogluon/core/_setup_utils.py
+# Include generated version.py files
+recursive-include core/src/autogluon */version.py
+recursive-include */src/autogluon */version.py
 
-# Include all submodules and necessary files
-recursive-include core/src *.py
-recursive-include common/src *.py
-recursive-include eda/src *.py
-recursive-include features/src *.py
-recursive-include multimodal/src *.py
-recursive-include tabular/src *.py
-recursive-include timeseries/src *.py
+# Include all Python files
+recursive-include core/src/autogluon *.py
+recursive-include */src/autogluon *.py
+
+# Include JSON, YAML, TXT, and configuration files
+recursive-include core/src/autogluon *.json
+recursive-include core/src/autogluon *.yaml
+recursive-include core/src/autogluon *.yml
+recursive-include core/src/autogluon *.txt
+recursive-include core/src/autogluon *.cfg
+recursive-include */src/autogluon *.json
+recursive-include */src/autogluon *.yaml
+recursive-include */src/autogluon *.yml
+recursive-include */src/autogluon *.txt
+recursive-include */src/autogluon *.cfg
+
+# Include data and configuration files for specific modules
+recursive-include tabular/src/autogluon/tabular *
+recursive-include timeseries/src/autogluon/timeseries *
+recursive-include multimodal/src/autogluon/multimodal *
+recursive-include eda/src/autogluon/eda *
+recursive-include features/src/autogluon/features *
+
+# Include test files
+recursive-include core/tests *.py
+recursive-include tabular/tests *.py
+recursive-include */tests *.json
+recursive-include */tests *.yaml
+recursive-include */tests *.txt
+recursive-include */tests *
+
+# Include other important files for submodules
+recursive-include core *
+recursive-include eda *
+recursive-include features *
+recursive-include multimodal *
+recursive-include tabular *
+recursive-include timeseries *
+
+# Exclude unnecessary files (if any)
+exclude *.pyc
+exclude __pycache__/
+exclude .DS_Store
